@@ -1,0 +1,12 @@
+name: CVEntityEdit
+main: org.cubeville.cventityedit.CVEntityEdit
+authors: [FrediW]
+version: 1.21.1
+api-version: 1.21
+
+depend: [WorldEdit,WorldGuard]
+
+commands:
+  ee:
+    description: All kinds of ee command
+    permission: cvee.cmd
