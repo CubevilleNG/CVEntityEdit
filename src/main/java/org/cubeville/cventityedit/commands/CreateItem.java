@@ -17,6 +17,8 @@ import org.cubeville.commons.commands.CommandResponse;
 import org.cubeville.commons.commands.CommandExecutionException;
 import org.cubeville.commons.commands.Command;
 
+import org.cubeville.cventityedit.Selection;
+
 public class CreateItem extends Command
 {
     public CreateItem() {
@@ -36,6 +38,9 @@ public class CreateItem extends Command
         ItemDisplay id = (ItemDisplay) location.getWorld().spawnEntity(location, EntityType.ITEM_DISPLAY);
         id.setItemStack(item);
 
+        Selection.getInstance().clearEntitySelection(player);
+        Selection.getInstance().addEntity(player, id);
+        
         return null;
     }
 }

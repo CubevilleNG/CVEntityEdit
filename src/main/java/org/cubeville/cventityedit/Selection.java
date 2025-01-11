@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.Comparator;
 
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.entity.TextDisplay;
+import org.bukkit.Color;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Display;
@@ -61,6 +64,38 @@ public class Selection
         clearEntitySelection(player);
         for(Entity e: entities) addEntity(player, e);
     }
+
+    public void flash(Player player) {
+        Map<UUID, Color> savedBgColors = new HashMap<>();
+        for(UUID eid: entitySelection.get(player.getUniqueId())) {
+            Entity e = Bukkit.getServer().getEntity(eid);
+            if(e == null || e.isValid() == false) continue;
+            if(e.getType() == EntityType.TEXT_DISPLAY) {
+                TextDisplay td = (TextDisplay) e;
+                savedBgColors.put(e.getUniqueId(), td.getBackgroundColor());
+                td.setBackgroundColor(Color.fromARGB(255, 255, 255, 255));
+            }
+            else {
+                e.setGlowing(!e.isGlowing());
+            }
+        }
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for(UUID eid: entitySelection.get(player.getUniqueId())) { // TODO better iterate over the map that we created, just in case the selection should happen to change meanwhile, though unlikely
+                    Entity e = Bukkit.getServer().getEntity(eid);
+                    if(e == null || e.isValid() == false) continue;
+                    if(e.getType() == EntityType.TEXT_DISPLAY) {
+                        ((TextDisplay) e).setBackgroundColor(savedBgColors.get(e.getUniqueId()));
+                    }
+                    else {
+                        e.setGlowing(!e.isGlowing());
+                    }
+                }
+            }
+        }.runTaskLater(CVEntityEdit.getInstance(), 10L);
+    }
     
     public void sort(Player player) {
         List<UUID> entities = entitySelection.get(player.getUniqueId());
@@ -79,26 +114,32 @@ public class Selection
                     if(e1valid == false) return -1;
                     if(e2valid == false) return 1;
  
-                   if(e1 instanceof Display && ! (e2 instanceof Display)) return -1;
+                    if(e1 instanceof Display && ! (e2 instanceof Display)) return -1;
                     if(e2 instanceof Display && ! (e1 instanceof Display)) return 1;
 
                     if(e1.getType() == EntityType.ITEM_DISPLAY && e2.getType() != EntityType.ITEM_DISPLAY) return -1;
                     if(e1.getType() != EntityType.ITEM_DISPLAY && e2.getType() == EntityType.ITEM_DISPLAY) return 1;
 
-                    Double y1 = e1.getLocation().getY() + ((ItemDisplay) e1).getTransformation().getTranslation().y;
-                    Double y2 = e2.getLocation().getY() + ((ItemDisplay) e2).getTransformation().getTranslation().y;
-
-                    String mat1 = ((ItemDisplay) e1).getItemStack().getType().toString();
-                    String mat2 = ((ItemDisplay) e2).getItemStack().getType().toString();
+                    Double y1 = e1.getLocation().getY();
+                    if(e1 instanceof Display) y1 += ((Display) e1).getTransformation().getTranslation().y;
+                    Double y2 = e2.getLocation().getY();
+                    if(e2 instanceof Display) y2 += ((Display) e2).getTransformation().getTranslation().y;
 
                     if(y1 != y2)
-                        return y1.compareTo(y2);
+                        return y2.compareTo(y1);
 
-                    if(!mat1.equals(mat2))
-                        return mat1.compareTo(mat2);
-
-                    Double x1 = e1.getLocation().getX() + e1.getLocation().getZ() + ((ItemDisplay) e1).getTransformation().getTranslation().x + ((ItemDisplay) e1).getTransformation().getTranslation().z;
-                    Double x2 = e2.getLocation().getX() + e2.getLocation().getZ() + ((ItemDisplay) e2).getTransformation().getTranslation().x + ((ItemDisplay) e2).getTransformation().getTranslation().z;
+                    if(e1 instanceof ItemDisplay && e2 instanceof ItemDisplay) {
+                        String mat1 = ((ItemDisplay) e1).getItemStack().getType().toString();
+                        String mat2 = ((ItemDisplay) e2).getItemStack().getType().toString();
+                        
+                        if(!mat1.equals(mat2))
+                            return mat1.compareTo(mat2);
+                    }
+                    
+                    Double x1 = e1.getLocation().getX() + e1.getLocation().getZ();
+                    if(e1 instanceof Display) x1 += ((Display) e1).getTransformation().getTranslation().x + ((Display) e1).getTransformation().getTranslation().z;
+                    Double x2 = e2.getLocation().getX() + e2.getLocation().getZ();
+                    if(e2 instanceof Display) x2 += ((Display) e2).getTransformation().getTranslation().x + ((Display) e2).getTransformation().getTranslation().z;
 
                     return x1.compareTo(x2);
                 }                

@@ -3,6 +3,7 @@ package org.cubeville.cventityedit.commands;
 import java.util.Set;
 import java.util.Map;
 
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.EntityType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -33,13 +34,21 @@ public class List extends Command
         int count = 0;
         for(Entity e: entities) {
             count++;
+
             if(e.getType() == EntityType.ITEM_DISPLAY) {
                 ItemDisplay item = (ItemDisplay) e;
                 response.addMessage("&8" + count + ") &rItem: " + item.getItemStack().getType());
             }
-            else {
-                response.addMessage("&8" + count + ") &rUnknown entity type");
+
+            else if(e.getType() == EntityType.TEXT_DISPLAY) {
+                TextDisplay text = (TextDisplay) e;
+                response.addMessage("&8" + count + ") &rText: " + text.getText());
             }
+            
+            else {
+                response.addMessage("&8" + count + ") &rEntity: " + e.getType());
+            }
+            
         }
 
         return response;

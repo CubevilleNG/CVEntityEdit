@@ -3,6 +3,7 @@ package org.cubeville.cventityedit.commands;
 import java.util.Set;
 import java.util.Map;
 
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.Bukkit;
@@ -26,7 +27,7 @@ public class Info extends Command
 {
     public Info() {
         super("info");
-        addBaseParameter(new CommandParameterInteger());
+        addOptionalBaseParameter(new CommandParameterInteger());
         addParameter("rel", true, new CommandParameterInteger());
     }
 
@@ -41,23 +42,36 @@ public class Info extends Command
         java.util.List<Entity> entities = Selection.getInstance().getSelectedEntities(player);
         if(entities == null || entities.size() == 0) throw new CommandExecutionException("No selection.");
 
-        int entityNo = (int) baseParameters.get(0);
+        int entityNo = 1;
+        if(baseParameters.size() > 0)
+            entityNo = (int) baseParameters.get(0);
+        
         if(entityNo < 1 || entityNo > entities.size()) throw new CommandExecutionException("Invalid entity index.");
 
         Entity entity = entities.get(entityNo - 1);
 
         CommandResponse response = new CommandResponse();
-        
+
+        response.addMessage("UUID: " + entity.getUniqueId());
+
         if(entity.getType() == EntityType.ITEM_DISPLAY) {
             ItemDisplay item = (ItemDisplay) entity;
             response.addMessage("Item: " + item.getItemStack().getType());
             response.addMessage("Transform: " + item.getItemDisplayTransform());
         }
+
+        else if(entity.getType() == EntityType.TEXT_DISPLAY) {
+            TextDisplay text = (TextDisplay) entity;
+            response.addMessage("Text: " + text.getText());
+        }
+        
         else {
             response.addMessage("Unknown entity type");
         }
 
         response.addMessage(coordinateMessage("XYZ: ", entity.getLocation().getX(), entity.getLocation().getY(), entity.getLocation().getZ()));
+        response.addMessage("Yaw , Pitch: " + (Math.round(entity.getLocation().getYaw() * 10) / 10) + ", " + (Math.round(entity.getLocation().getPitch() * 10) / 10));
+        
         if(parameters.containsKey("rel")) {
             int rel = (int) parameters.get("rel");
             if(rel < 1 || rel > entities.size()) throw new CommandExecutionException("rel parameters inavlid!");

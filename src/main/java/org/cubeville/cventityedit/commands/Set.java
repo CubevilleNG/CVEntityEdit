@@ -3,6 +3,7 @@ package org.cubeville.cventityedit.commands;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.EntityType;
@@ -16,6 +17,8 @@ import org.bukkit.util.Transformation;
 import org.joml.Vector3f;
 import org.joml.AxisAngle4f;
 
+import org.cubeville.commons.commands.CommandParameterInteger;
+import org.cubeville.commons.commands.CommandParameterListInteger;
 import org.cubeville.commons.commands.CommandParameterListDouble;
 import org.cubeville.commons.commands.CommandParameterVector;
 import org.cubeville.commons.commands.CommandParameterEnum;
@@ -34,6 +37,9 @@ public class Set extends Command
         addParameter("leftrot", true, new CommandParameterListDouble(4, ","));
         addParameter("rightrot", true, new CommandParameterListDouble(4, ","));
         addParameter("orientation", true, new CommandParameterListDouble(2, ","));
+        //addParameter("color", true, new CommandParameterListInteger(3));
+        //addParameter("alpha", true, new CommandParameterInteger());
+        addParameter("opacity", true, new CommandParameterInteger());
         CommandUtils.addNoParameter(this);
     }
 
@@ -59,6 +65,15 @@ public class Set extends Command
                     item.setItemDisplayTransform((ItemDisplay.ItemDisplayTransform) parameters.get("itemtransform"));
             }
 
+            if(e.getType() == EntityType.TEXT_DISPLAY) {
+                TextDisplay text = (TextDisplay) e;
+                if(parameters.containsKey("opacity")) {
+                    int o = (int) parameters.get("opacity");
+                    if(o < 0 || o > 255) throw new CommandExecutionException("Opacity must be 0-255!");
+                    text.setTextOpacity((byte) o);
+                }
+            }
+            
             if(e instanceof Display) {
                 Display d = (Display) e;
 
@@ -94,6 +109,7 @@ public class Set extends Command
 
                 if(transchanged)
                     d.setTransformation(new Transformation(move, rotLeft, scale, rotRight));
+                
             }
         }
 

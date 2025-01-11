@@ -42,6 +42,7 @@ public class SelectNear extends Command
         }
 
         Selection.getInstance().sort(player);
+        Selection.getInstance().flash(player);
         
         return new CommandResponse("&a" + Selection.getInstance().getSelectedEntities(player).size() + " entities selected.");
     }
