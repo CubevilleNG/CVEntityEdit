@@ -40,6 +40,7 @@ public class Set extends Command
         //addParameter("color", true, new CommandParameterListInteger(3));
         //addParameter("alpha", true, new CommandParameterInteger());
         addParameter("opacity", true, new CommandParameterInteger());
+        addFlag("item");
         CommandUtils.addNoParameter(this);
     }
 
@@ -63,6 +64,8 @@ public class Set extends Command
                 ItemDisplay item = (ItemDisplay) e;
                 if(parameters.containsKey("itemtransform"))
                     item.setItemDisplayTransform((ItemDisplay.ItemDisplayTransform) parameters.get("itemtransform"));
+                if(flags.contains("item"))
+                    item.setItemStack(player.getInventory().getItemInMainHand());
             }
 
             if(e.getType() == EntityType.TEXT_DISPLAY) {
